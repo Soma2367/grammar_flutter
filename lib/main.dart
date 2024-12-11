@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:math';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -22,44 +24,48 @@ class MyApp extends StatelessWidget {
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
-
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  final StreamController<Color> _colorStreamController = StreamController<Color>();
 
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
+  Color _currentColor = Colors.blue;
+
+  @override
+  void initState() {
+    super.initState();
+    _colorStreamController.stream.listen((newColor) {
+      setState(() {
+        _currentColor = newColor;
+      });
     });
   }
 
-  @override
+  Color _generateRandomColor() {
+    return Color((Random().nextDouble() * 0xFFFFFF).toInt()).withOpacity(1.0);
+  }
+  
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Flutter カウンターアプリ'),
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'ボタンを押した回数:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
+        child: AnimatedContainer(
+            duration: Duration(seconds: 1),
+            width: 200,
+            height: 200,
+            color: _currentColor
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+          onPressed: () {
+            final newColor = _generateRandomColor();
+            _colorStreamController.sink.add(newColor);
+          },
+        child: Icon(Icons.color_lens),
       ),
     );
   }
